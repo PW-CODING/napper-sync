@@ -166,7 +166,8 @@ About ten writes within ten seconds trigger
 {"name": "HttpError", "statusCode": 429, "message": "Too many requests - 10 seconds"}
 ```
 
-The client parses the number of seconds, waits, and retries up to four times.
+The client parses the number of seconds, waits, and tries again, up to four attempts
+in all.
 Reads were never throttled during testing.
 
 ## How the write endpoint was found

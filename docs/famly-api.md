@@ -109,12 +109,24 @@ category and start time (as UTC seconds) in a fixed namespace. The same Famly
 event therefore always maps to the same Napper entry, and because Napper
 overwrites on a repeated `PUT` with the same ID, a correction at the nursery -
 a nap that ended later, an added note, a different diaper content - reaches
-Napper on the next run. Only start, end, comment and the fields Famly sets are
-overwritten; anything added to the entry in the Napper app is kept. A changed
-*start* time yields a new ID; such an event is caught by the time-based
-duplicate check and left alone, not corrected.
+Napper on the next run. Start, end, comment and the fields Famly sets belong to
+the nursery entry and are overwritten when they differ. Fields added in the
+Napper app, such as how the child fell asleep, are kept. A comment edited in the
+app is reset to the nursery's text on the next run.
+
+Limits that follow from this:
+
+* A changed *start* time yields a new ID. Within ten minutes of the old entry,
+  or overlapping it, the time-based duplicate check skips the event and the old
+  entry stays uncorrected. Otherwise a second entry appears next to the old one.
+* The duplicate check applies to everything that is not yet in Napper, so two
+  events of the same category within ten minutes are merged into one. The second
+  is counted as unchanged and not listed.
+* Deletions at the nursery are never propagated.
+* A nap that is still running has no end time. It is listed as skipped until it
+  ends.
 
 Famly events the mapping does not understand are **listed in the output**,
 never dropped silently - so a nursery that starts logging temperature or
-medication will be noticed, and `napper_sync/famly_mapping.py` can be
+medication will be noticed, and `src/napper_sync/famly_mapping.py` can be
 extended (the Napper side already knows every category).

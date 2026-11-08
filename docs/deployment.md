@@ -51,10 +51,11 @@ across (`ssh host 'napper-sync famly token <VALUE>'`).
 
 ### Secrets and permissions
 
-Everything sensitive sits in `~/.config/napper-sync/` with mode `600`:
-`napper-tokens.json`, `famly-token`, and the Discord webhook inside
-`config.toml`. Keep that directory out of backups that leave your control, and
-never commit it.
+Everything sensitive sits in `~/.config/napper-sync/`, a directory with mode
+`700`. The token files `napper-tokens.json` and `famly-token` are written with
+mode `600`. `config.toml` may hold the Discord webhook and is protected by the
+directory only, so do not loosen the directory's mode. Keep the directory out of
+backups that leave your control, and never commit it.
 
 ## 3. systemd timer
 
@@ -89,8 +90,10 @@ Design notes, in case you want to change them:
 * **Hardening** - `ProtectSystem=strict` and `ProtectHome=read-only`, with
   `ReadWritePaths=` opened only for the config directory. That last line is
   not optional: the Napper id-token is refreshed automatically and written
-  back to `napper-tokens.json`. Without write access the refresh fails
-  silently a few weeks after installation.
+  back to `napper-tokens.json`. Without write access the refresh fails a few
+  weeks after installation: Napper has by then replaced the old token, the new
+  one cannot be stored, and the run exits with an error that the failure unit
+  reports. Only a new `napper-sync login` recovers from that.
 
 ## 4. Discord notifications
 
@@ -119,6 +122,10 @@ is not proof that all is well.
 `napper-sync sync-famly --live`. Output goes nowhere by default; if you want
 a log, wrap the call in a `.cmd` that appends to a file. The Discord
 notifications work the same way.
+
+As registered, the task runs only while you are logged on. To run it when nobody
+is logged on, create it with `/RU` and `/RP` for the account you want, or use
+the Task Scheduler dialog.
 
 ## Updating
 

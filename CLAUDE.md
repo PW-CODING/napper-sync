@@ -76,6 +76,11 @@ ruff check . && ruff format --check .
   overwrites. Also intentional.
 - The Famly client sends a browser-style User-Agent because Famly answers 403
   without one. Documented in `docs/famly-api.md`.
-- A changed *start* time at the nursery is not corrected: it yields a new ID,
-  and the time-based duplicate check then leaves the old entry alone. Known
-  gap, documented.
+- A changed *start* time at the nursery is not corrected: it yields a new ID.
+  Within ten minutes of the old entry, or overlapping it, the time-based
+  duplicate check leaves the old entry alone; otherwise a second entry appears
+  next to it. Known gap, documented.
+- Two Famly entries of the same category within ten minutes collapse into one,
+  because the duplicate check also applies to ID-bearing entries that are not
+  yet in Napper. Known gap, documented. A fix must keep protecting against
+  older imports that carry random IDs.

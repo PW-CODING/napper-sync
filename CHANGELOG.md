@@ -6,6 +6,12 @@ Documentation only.
 
 - README and deployment guide install from PyPI, with a PyPI badge.
 - Project banner.
+- Known limits are stated plainly: the comment belongs to the nursery entry,
+  same-category entries within ten minutes merge, moved start times and
+  nursery-side deletions are not followed, running naps wait until they end.
+- Corrected: what happens when a token refresh cannot be saved, the permissions
+  of `config.toml`, the number of retries on a 429, the Windows task's logon
+  requirement and a file path in the Famly notes.
 
 ## 0.1.0 - 2026-11-08
 
