@@ -1,0 +1,37 @@
+# secrets and local state - never commit
+.napper/
+.famly/
+*-token
+*-token.txt
+tokens.json
+napper-tokens.json
+discord_webhook*
+config.toml
+!examples/config.example.toml
+
+# data dumps from tools/
+history.json
+historie.json
+*.log
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# coverage
+.coverage
+coverage.xml
+htmlcov/

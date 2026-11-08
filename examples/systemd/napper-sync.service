@@ -1,0 +1,29 @@
+[Unit]
+Description=napper-sync: import the nursery's Famly entries into Napper
+Documentation=https://github.com/PW-CODING/napper-sync
+After=network-online.target
+Wants=network-online.target
+# If the run crashes, times out or fails to start, report it to Discord.
+# The sync itself reports API-level failures; this covers everything else.
+OnFailure=napper-sync-failed@%n.service
+
+[Service]
+Type=oneshot
+# Adjust the user and paths to your installation.
+User=pi
+Environment=PYTHONUNBUFFERED=1
+# IDs, host and look-back window come from ~/.config/napper-sync/config.toml.
+ExecStart=/home/pi/.local/bin/napper-sync sync-famly --live
+TimeoutStartSec=600
+
+# Hardening: the service needs the network and its own config directory - nothing else.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+# Napper tokens are refreshed automatically and rewritten here. Without this
+# line the refresh fails silently a few weeks in.
+ReadWritePaths=/home/pi/.config/napper-sync
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true

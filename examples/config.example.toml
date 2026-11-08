@@ -1,0 +1,25 @@
+# napper-sync configuration
+# Location: ~/.config/napper-sync/config.toml  (or $NAPPER_SYNC_HOME/config.toml)
+
+[napper]
+# From `napper-sync babies`
+baby_id = ""
+
+[famly]
+# Famly runs one instance per country. Yours is shown in the browser under
+# localStorage["famly.existingLogins"] -> baseUrl.  Common: app.famly.de, app.famly.co
+host = "app.famly.de"
+# From `napper-sync famly children`
+child_id = ""
+
+[sync]
+# How many days back each run looks. Four covers a weekend from the Monday run.
+days = 4
+# Appended to the comment of every entry imported from Famly, so you can tell
+# them apart in the Napper app. Set to "" to disable.
+marker = "(Famly)"
+
+[notify]
+# Discord webhook for failures and successful imports. Leave empty to disable.
+# Can also be given via the NAPPER_SYNC_DISCORD_WEBHOOK environment variable.
+discord_webhook = ""

@@ -1,0 +1,14 @@
+[Unit]
+Description=Discord report because %i failed
+
+[Service]
+Type=oneshot
+User=pi
+ExecStart=/home/pi/.local/bin/napper-sync notify --unit %i
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=true
+RestrictSUIDSGID=true

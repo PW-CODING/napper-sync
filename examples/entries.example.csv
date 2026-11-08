@@ -1,0 +1,9 @@
+start,end,category,comment,feedingAmount,bottleFeedingType,diaperContent,temperature,howBabySlept
+2026-09-17T13:10:00,2026-09-17T14:35:00,nap,,,,,,SWING
+2026-09-17T15:00:00,,bottle,,120,FORMULA,,,
+2026-09-17T15:30:00,,diaper,,,,WET,,
+2026-09-17T17:00:00,,solids,Pumpkin & beef,90,,,,
+2026-09-17T18:30:00,,temperature,after the bath,,,,37.2,
+2026-09-17T19:00:00,,medicine,Vitamin D,,,,,
+2026-09-17T19:40:00,,bedtime,,,,,,IN_BED
+2026-09-18T06:15:00,,wokeup,,,,,,

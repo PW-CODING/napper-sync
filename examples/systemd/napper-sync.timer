@@ -1,0 +1,17 @@
+[Unit]
+Description=napper-sync during nursery hours
+
+[Timer]
+# The nursery is open Mon-Fri 7-17. Hourly in that window, plus one run at
+# 18:00 to pick up anything logged after closing. Nothing happens at night or
+# on weekends, so nothing runs.
+OnCalendar=Mon..Fri 07..18:00
+# Catch up on runs missed while the machine was off.
+Persistent=true
+# Don't hit the APIs exactly on the hour.
+RandomizedDelaySec=120
+AccuracySec=30s
+Unit=napper-sync.service
+
+[Install]
+WantedBy=timers.target

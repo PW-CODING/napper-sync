@@ -1,0 +1,8 @@
+[
+  {"start": "2026-09-17T13:10:00", "end": "2026-09-17T14:35:00", "category": "nap",
+   "fields": {"howBabySlept": "SWING"}},
+  {"start": "2026-09-17T15:00:00", "category": "bottle", "feedingAmount": 120,
+   "bottleFeedingType": "FORMULA"},
+  {"start": "2026-09-17T15:30:00", "category": "diaper", "diaperContent": "WET"},
+  {"start": "2026-09-17T19:00:00", "category": "medicine", "comment": "Vitamin D"}
+]
