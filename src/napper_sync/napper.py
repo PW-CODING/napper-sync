@@ -22,7 +22,7 @@ import logging
 import re
 import time
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -46,6 +46,7 @@ REFRESH_MARGIN = timedelta(days=7)
 # Napper throttles writes (about 10 per 10 seconds) and answers 429.
 RATE_LIMIT_ATTEMPTS = 4
 RATE_LIMIT_DEFAULT_WAIT = 10.0
+RATE_LIMIT_MAX_WAIT = 60.0  # a longer demand is not waited out: the call fails instead
 
 
 class NapperError(Exception):
@@ -83,10 +84,22 @@ class Tokens:
 
     @classmethod
     def load(cls, path: Path | None = None) -> Tokens | None:
+        """The stored tokens, or ``None`` when there are none.
+
+        Keys this version does not know are ignored, so a file written by a
+        newer version still loads. A damaged file asks for a new login.
+        """
         path = path or cfg.napper_tokens_path()
         if not path.exists():
             return None
-        return cls(**json.loads(path.read_text(encoding="utf-8")))
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            known = {f.name for f in fields(cls)}
+            return cls(**{k: v for k, v in data.items() if k in known})
+        except (ValueError, TypeError, AttributeError) as err:
+            raise NapperAuthError(
+                f"The token file {path} is damaged ({err}). Run `napper-sync login <email>` again."
+            ) from err
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +116,15 @@ class NapperClient:
         tokens_path: Path | None = None,
     ):
         self._tokens_path = tokens_path
-        self.tokens = tokens or Tokens.load(tokens_path)
+        self._load_error: NapperAuthError | None = None
+        if tokens is None:
+            try:
+                tokens = Tokens.load(tokens_path)
+            except NapperAuthError as err:
+                # A login replaces the file, so it has to keep working; a call
+                # that needs the tokens reports the damage instead.
+                self._load_error = err
+        self.tokens = tokens
         self.device_id = device_id or (self.tokens.device_id if self.tokens else _new_device_id())
         self.base_url = base_url or API_BASE_URL
 
@@ -122,6 +143,8 @@ class NapperClient:
         }
         if auth:
             if not self.tokens:
+                if self._load_error:
+                    raise self._load_error
                 raise NapperAuthError("Not logged in - run `napper-sync login <email>` first.")
             headers["Authorization"] = f"Bearer {self.tokens.id_token}"
         return headers
@@ -153,6 +176,12 @@ class NapperClient:
             detail = err.read().decode(errors="replace")[:500]
             if err.code == 429 and attempt < RATE_LIMIT_ATTEMPTS:
                 wait = _wait_seconds(detail)
+                if wait > RATE_LIMIT_MAX_WAIT:
+                    raise NapperError(
+                        f"HTTP 429 on {method} {path}: Napper asks to wait {wait:.0f}s, "
+                        f"longer than the {RATE_LIMIT_MAX_WAIT:.0f}s this client waits. "
+                        f"Try again later. ({detail})"
+                    ) from err
                 log.info(
                     "Napper rate limit - waiting %.0fs (attempt %d/%d)",
                     wait,

@@ -48,6 +48,14 @@ SLEEP = {
         "endNotes": "woke up happy",
     },
 }
+# Not captured from a live account yet: the finished nap above without its end.
+# Replace it with an anonymised real event once one has been seen.
+RUNNING_SLEEP = dict(
+    SLEEP,
+    title="10:35: Child is sleeping.",
+    to=None,
+    embed=dict(SLEEP["embed"], endNotes=None),
+)
 UNKNOWN = {
     "title": "Child: Something new",
     "from": "2026-09-16T10:00:00+00:00",
@@ -98,6 +106,23 @@ def test_sleep_becomes_nap_with_local_times_and_notes():
     assert entry.end == datetime.fromisoformat(SLEEP["to"])
     assert is_local(entry.start) and is_local(entry.end)
     assert entry.comment == "woke up happy (Famly)"
+
+
+def test_running_nap_is_reported_as_running_not_as_unknown():
+    entries, notes = translate([RUNNING_SLEEP])
+    since = datetime.fromisoformat(RUNNING_SLEEP["from"]).astimezone()
+
+    assert entries == []
+    assert len(notes) == 1
+    assert "still running" in notes[0] and f"{since:%H:%M}" in notes[0]
+
+
+def test_untyped_event_without_sleep_fields_is_not_taken_for_a_nap():
+    untyped = {"title": "Child: Something", "from": "2026-09-16T10:00:00+00:00", "to": None}
+    entries, notes = translate([untyped])
+
+    assert entries == []
+    assert len(notes) == 1 and "still running" not in notes[0]
 
 
 def test_unknown_event_is_reported_not_lost():

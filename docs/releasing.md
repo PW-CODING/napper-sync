@@ -34,7 +34,10 @@ PyPI never accepts the same version twice, so rehearse first.
    `pip install -i https://test.pypi.org/simple/ napper-sync`.
 3. Run the workflow again with target `pypi`.
 
-The manual run builds from the branch you pick, normally `main`.
+A manual run builds from the branch you pick. An upload to `pypi` only works
+from `main`; `testpypi` can be rehearsed from any branch. Every run, by hand or
+from a release, runs the test suite against the built wheel before anything is
+uploaded.
 
 ## Every later release
 

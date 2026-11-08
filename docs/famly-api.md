@@ -126,8 +126,11 @@ Limits that follow from this:
   typed into the app. A Famly event within ten minutes of such an entry, or
   overlapping it, is not written.
 * Deletions at the nursery are never propagated.
-* A nap that is still running has no end time. It is listed as skipped until it
-  ends.
+* A nap that is still running has no end time. It is reported as still running
+  and imported by the first run after it ends. The mapping recognises it as a
+  sleep without `to` (an `embed` with `startNotes`); this shape is inferred
+  from finished naps and has not been captured from a live account yet. If it
+  differs, the event is listed as skipped instead, so nothing is lost.
 
 Famly events the mapping does not understand are **listed in the output**,
 never dropped silently - so a nursery that starts logging temperature or

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime, timedelta
 
@@ -29,6 +30,51 @@ def test_login_flow_persists_tokens(mock_api, home):
     assert Tokens.load().refresh_token == "refresh-token"
     # a fresh client picks the stored tokens up
     assert NapperClient(base_url=mock_api.base_url).tokens.account_id == "account-1"
+
+
+def test_token_file_with_an_unknown_field_still_loads(home):
+    path = Tokens("account-1", "id-token", "refresh-token", "TEST-DEVICE").save()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["fieldFromANewerVersion"] = True
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+    tokens = Tokens.load()
+
+    assert tokens.account_id == "account-1"
+    assert tokens.refresh_token == "refresh-token"
+
+
+@pytest.mark.parametrize(
+    "content", ['{"account_id": "account-1"}', "not json"], ids=["field missing", "not JSON"]
+)
+def test_damaged_token_file_asks_for_a_new_login(home, content):
+    cfg.ensure_home()
+    cfg.napper_tokens_path().write_text(content, encoding="utf-8")
+
+    with pytest.raises(NapperAuthError, match="login"):
+        Tokens.load()
+
+
+def test_call_with_a_damaged_token_file_asks_for_a_new_login(mock_api, home):
+    cfg.ensure_home()
+    cfg.napper_tokens_path().write_text("not json", encoding="utf-8")
+    client = NapperClient(base_url=mock_api.base_url)
+
+    with pytest.raises(NapperAuthError, match="damaged"):
+        client.babies()
+
+    assert not [c for c in mock_api.calls if c[1] == "/babies"]
+
+
+def test_login_replaces_a_damaged_token_file(mock_api, home, capsys, monkeypatch):
+    from napper_sync import cli, napper
+
+    monkeypatch.setattr(napper, "API_BASE_URL", mock_api.base_url)
+    cfg.ensure_home()
+    cfg.napper_tokens_path().write_text("not json", encoding="utf-8")
+
+    assert cli.main(["login", "parent@example.test", "--code", "123456"]) == 0
+    assert Tokens.load().refresh_token == "refresh-token"
 
 
 def test_wrong_otp_is_an_error(mock_api, home):
@@ -121,6 +167,19 @@ def test_rate_limit_is_retried(client, mock_api):
     assert result["log_id"] in mock_api.logs
     puts = [c for c in mock_api.calls if c[0] == "PUT"]
     assert len(puts) == 3
+
+
+def test_rate_limit_with_a_long_wait_gives_up_instead_of_sleeping(client, mock_api, monkeypatch):
+    slept = []
+    monkeypatch.setattr("napper_sync.napper.time.sleep", slept.append)
+    mock_api.rate_limit_next = 1
+    mock_api.rate_limit_seconds = 3600
+
+    with pytest.raises(NapperError, match="3600"):
+        client.create_log("baby-1", "nap", START, END, dry_run=False)
+
+    assert slept == []
+    assert len([c for c in mock_api.calls if c[0] == "PUT"]) == 1
 
 
 def test_delete_log(client, mock_api):

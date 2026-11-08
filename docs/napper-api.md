@@ -172,7 +172,8 @@ About ten writes within ten seconds trigger
 ```
 
 The client parses the number of seconds, waits, and tries again, up to four attempts
-in all.
+in all. It waits at most 60 seconds; when the server asks for longer, the call
+fails with an error at once instead of blocking the run.
 Reads were never throttled during testing.
 
 ## How the write endpoint was found

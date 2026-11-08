@@ -1,8 +1,10 @@
 name: Publish to PyPI
 
-# Runs when a GitHub release is published, or by hand from the Actions tab.
-# Uses PyPI trusted publishing (OpenID Connect), so no API token is stored
-# anywhere. One-time setup and the release routine: docs/releasing.md.
+# Runs when a GitHub release is published, or by hand from the Actions tab
+# (an upload to PyPI by hand only from main). The test suite runs against the
+# built wheel before anything is uploaded. Uses PyPI trusted publishing (OpenID
+# Connect), so no API token is stored anywhere. One-time setup and the release
+# routine: docs/releasing.md.
 
 on:
   release:
@@ -22,6 +24,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: A manual upload to PyPI runs only from main
+        if: github.event_name == 'workflow_dispatch' && inputs.target == 'pypi' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::A manual upload to PyPI must start from main, not $GITHUB_REF."
+          exit 1
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
@@ -51,6 +58,10 @@ jobs:
           /tmp/smoke/bin/pip install dist/*.whl
           /tmp/smoke/bin/napper-sync --version
           /tmp/smoke/bin/napper-sync categories > /dev/null
+      - name: Test suite against the wheel
+        run: |
+          /tmp/smoke/bin/pip install pytest
+          /tmp/smoke/bin/python -m pytest
       - uses: actions/upload-artifact@v7
         with:
           name: dist

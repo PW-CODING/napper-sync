@@ -74,6 +74,11 @@ def translate(
                 entry = _meal(ev, title, marker)
             elif ev.get("to"):
                 entry = _sleep(ev, embed, marker)
+            elif kind is None and "startNotes" in embed:
+                # A sleep without an end yet: a later run imports it.
+                since = parse_time(ev["from"])
+                notes.append(f"nap still running since {since:%H:%M}, imported once it ends")
+                continue
             else:
                 notes.append(f"skipped ({kind or 'no type'}): {title[:70]}")
                 continue

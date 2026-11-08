@@ -111,13 +111,14 @@ Categories accept English or German short names (`nap`/`nickerchen`,
 | Writing by accident | every write and delete is a dry run without `--live` |
 | Duplicates from repeated runs | Famly entries get a stable ID derived from child, category and start, so a repeated run rewrites the same entry instead of adding one; entries without such an ID, such as older imports and hand-made entries, are matched by time: a new entry is skipped if the same category is already there within 10 minutes or overlaps; day markers are one-per-day |
 | Corrections at the nursery | a changed end time, note or diaper content overwrites the Napper entry on the next run; fields added by hand in the app are kept, but the comment belongs to the nursery entry and is reset if you edit it |
-| Hammering the API | 429 responses are parsed and retried with the server's requested delay |
+| Hammering the API | 429 responses are parsed and retried with the server's requested delay, up to 60 seconds; a longer demand ends the run with an error instead of blocking it |
 | Bad data | field names, enum values and ranges are validated locally before a request is built |
 | Silent breakage | Discord message on expired token, failed write, crashed run; unknown Famly event types are listed, never dropped |
 
 ### Known limits
 
-- A nap that is still running at the nursery has no end yet. It is listed as skipped until it ends.
+- A nap that is still running at the nursery has no end yet. It is reported as still running and
+  imported by the first run after it ends.
 - If the nursery moves the start time of an entry, Napper sees a new event. A nap whose new time
   overlaps the old one is left alone and the old entry stays as it is. A moved meal or diaper change
   appears as a second entry next to the old one.

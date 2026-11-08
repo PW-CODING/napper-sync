@@ -26,6 +26,7 @@ class MockState:
         self.calls: list[tuple[str, str, dict | None]] = []
         self.discord: list[dict] = []
         self.rate_limit_next = 0  # how many PUTs to answer 429 first
+        self.rate_limit_seconds = 0  # the wait the 429 message asks for
         self.auth_fail_next = 0  # how many authed GETs to answer 401 first
         self.refreshes = 0
         self.fail_puts_after: int | None = None  # answer 500 once this many PUTs succeeded
@@ -112,7 +113,7 @@ def _handler(state: MockState):
                     {
                         "name": "HttpError",
                         "statusCode": 429,
-                        "message": "Too many requests - 0 seconds",
+                        "message": f"Too many requests - {state.rate_limit_seconds} seconds",
                     },
                     429,
                 )

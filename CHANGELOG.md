@@ -11,6 +11,16 @@
   account out. Napper had already replaced the refresh token, and the new one
   was lost. The client now checks for write access first and stops with an
   error that names the file; the stored login stays usable.
+- Fixed: a 429 that asked for a long wait blocked the run for that long, up to
+  three times. The client now waits at most 60 seconds and fails otherwise.
+- Fixed: a token file with a key this version does not know, or a damaged one,
+  stopped every command with a traceback or a cryptic error, `napper-sync login`
+  included. Unknown keys are ignored now; a damaged file asks for a new login,
+  and the login replaces it.
+- Changed: a nap still running at the nursery is reported as such instead of
+  as a skipped event of unknown type.
+- Publishing: a manual upload to PyPI only runs from `main`, and every upload
+  runs the test suite against the built wheel first.
 
 ## 0.1.1 - 2026-11-08
 
