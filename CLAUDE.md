@@ -76,11 +76,9 @@ ruff check . && ruff format --check .
   overwrites. Also intentional.
 - The Famly client sends a browser-style User-Agent because Famly answers 403
   without one. Documented in `docs/famly-api.md`.
-- A changed *start* time at the nursery is not corrected: it yields a new ID.
-  Within ten minutes of the old entry, or overlapping it, the time-based
-  duplicate check leaves the old entry alone; otherwise a second entry appears
-  next to it. Known gap, documented.
-- Two Famly entries of the same category within ten minutes collapse into one,
-  because the duplicate check also applies to ID-bearing entries that are not
-  yet in Napper. Known gap, documented. A fix must keep protecting against
-  older imports that carry random IDs.
+- A changed *start* time at the nursery is not corrected: it yields a new ID. A
+  nap whose new time overlaps the old one is left alone; a moved meal or diaper
+  change appears as a second entry next to the old one. Known gap, documented.
+- The time-based duplicate check does not apply between source entries that
+  each have an ID of their own (`own_ids` in `sync.py`). It still protects
+  against entries without one, such as older imports with random IDs.

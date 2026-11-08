@@ -132,7 +132,18 @@ def existing_entries(
     return out
 
 
-def is_duplicate(candidate: Entry, existing: Iterable[Entry]) -> bool:
+def is_duplicate(
+    candidate: Entry, existing: Iterable[Entry], own_ids: frozenset[str] | set[str] = frozenset()
+) -> bool:
+    """Is ``candidate`` already in ``existing``?
+
+    ``own_ids`` are the IDs the source itself assigns. A source entry with an ID of
+    its own is a different event from another one that has its own, however close
+    they are in time: a meal and a piece of fruit five minutes later are two
+    events. Between such entries only overlapping spans count as the same event.
+    Entries without a source ID, older imports and what a parent typed into the
+    app, are still matched by time.
+    """
     for other in existing:
         if other.category != candidate.category:
             continue
@@ -141,7 +152,8 @@ def is_duplicate(candidate: Entry, existing: Iterable[Entry]) -> bool:
             if other.start.date() == candidate.start.date():
                 return True
             continue
-        if abs(other.start - candidate.start) <= FUZZ:
+        distinct = bool(candidate.log_id) and other.log_id in own_ids
+        if not distinct and abs(other.start - candidate.start) <= FUZZ:
             return True
         if (
             candidate.cat.span
@@ -201,11 +213,13 @@ def sync(
 
     existing = existing_entries(client, baby_id, first, last)
     by_id = {e.log_id: e for e in existing if e.log_id}
+    own_ids = {e.log_id for e in entries if e.log_id}
     report(f"Already in Napper for that period: {len(existing)} logs")
 
     # Three outcomes per source entry:
     #   same ID already in Napper  -> correction if anything the source owns differs
-    #   same category close by     -> duplicate, left alone (older imports, manual entries)
+    #   same category close by     -> duplicate, left alone (older imports, manual entries;
+    #                                 not another event that has an ID of its own)
     #   otherwise                  -> new
     # Decided incrementally so that two near-identical entries in the *source*
     # also collapse into one - not only duplicates of what Napper already has.
@@ -218,7 +232,7 @@ def sync(
             if diff:
                 corrections.append((entry, other, diff))
             continue
-        if is_duplicate(entry, existing):
+        if is_duplicate(entry, existing, own_ids):
             continue
         new.append(entry)
         existing.append(entry)

@@ -7,6 +7,7 @@ import pytest
 
 from napper_sync import sources
 from napper_sync.categories import CategoryError
+from napper_sync.famly_mapping import translate
 from napper_sync.sync import Entry, is_duplicate, parse_time, sync
 
 T = datetime.fromisoformat("2026-09-18T10:00:00").astimezone()
@@ -306,3 +307,95 @@ class TestExistingEntriesAreReadLeniently:
         result = sync(client, "baby-1", [again], live=True, report=quiet)
 
         assert result.written == 0 and len(mock_api.logs) == 1
+
+
+# --- source entries that carry an ID of their own ---------------------------
+# An ID says "this is that event". Two different IDs are two different events,
+# however close in time. The time check exists for entries WITHOUT such an ID:
+# older imports and what a parent typed into the app.
+
+
+def famly_meal(title, when):
+    return {
+        "title": f"Child: {title}",
+        "from": when.isoformat(),
+        "to": None,
+        "embed": {"type": "mealRegistration", "mealItems": []},
+    }
+
+
+def famly_diaper(when, kind):
+    return {
+        "title": "Child: Windel",
+        "from": when.isoformat(),
+        "to": None,
+        "embed": {
+            "type": "childAction",
+            "actionType": "DIAPERCHANGE",
+            "diaperingType": kind,
+            "occuredOn": when.isoformat(),
+        },
+    }
+
+
+class TestEntriesWithTheirOwnId:
+    def test_two_meals_five_minutes_apart_are_both_written(self, client, mock_api):
+        events = [famly_meal("Fruehstueck", T), famly_meal("Obst", T + timedelta(minutes=5))]
+        entries, _ = translate(events, child_id="child-1")
+
+        result = sync(client, "baby-1", entries, live=True, report=quiet)
+
+        assert (result.written, result.skipped) == (2, 0)
+        assert len(mock_api.logs) == 2
+
+    def test_two_diaper_changes_five_minutes_apart_are_both_written(self, client, mock_api):
+        events = [famly_diaper(T, "WET"), famly_diaper(T + timedelta(minutes=5), "DIRTY")]
+        entries, _ = translate(events, child_id="child-1")
+
+        result = sync(client, "baby-1", entries, live=True, report=quiet)
+
+        assert result.written == 2
+        assert sorted(log["diaperContent"] for log in mock_api.logs.values()) == ["DIRTY", "WET"]
+
+    def test_a_repeated_run_leaves_both_alone(self, client, mock_api):
+        events = [famly_meal("Fruehstueck", T), famly_meal("Obst", T + timedelta(minutes=5))]
+        entries, _ = translate(events, child_id="child-1")
+        sync(client, "baby-1", entries, live=True, report=quiet)
+        before = len(puts(mock_api))
+
+        again = sync(client, "baby-1", entries, live=True, report=quiet)
+
+        assert (again.written, again.updated, again.skipped) == (0, 0, 2)
+        assert len(mock_api.logs) == 2 and len(puts(mock_api)) == before
+
+    def test_an_older_import_without_our_id_still_protects_against_duplicates(
+        self, client, mock_api
+    ):
+        # written by the earlier script, or typed into the app: a random ID
+        client.create_log("baby-1", "solids", T, comment="Fruehstueck", dry_run=False)
+        events = [
+            famly_meal("Fruehstueck", T + timedelta(minutes=3)),
+            famly_meal("Obst", T + timedelta(minutes=8)),
+        ]
+        entries, _ = translate(events, child_id="child-1")
+
+        result = sync(client, "baby-1", entries, live=True, report=quiet)
+
+        assert (result.written, result.skipped) == (0, 2)
+        assert len(mock_api.logs) == 1
+
+    def test_overlapping_naps_are_one_event_even_with_different_ids(self, client, mock_api):
+        first = nap(T, 60, log_id="LOG_first_NAP")
+        moved = nap(T + timedelta(minutes=20), 40, log_id="LOG_moved_NAP")
+
+        result = sync(client, "baby-1", [first, moved], live=True, report=quiet)
+
+        assert (result.written, result.skipped) == (1, 1)
+
+    def test_entries_without_an_id_still_collapse_when_close(self, client, mock_api):
+        a = Entry(start=T, category="solids")
+        b = Entry(start=T + timedelta(minutes=5), category="solids")
+
+        result = sync(client, "baby-1", [a, b], live=True, report=quiet)
+
+        assert (result.written, result.skipped) == (1, 1)

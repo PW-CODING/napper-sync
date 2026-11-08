@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Fixed: two Famly entries of the same category within ten minutes, such as a
+  meal and a piece of fruit logged five minutes apart, were merged into one and
+  the second never reached Napper. Entries that carry their own ID are now
+  distinct events. The time check still protects against older imports and
+  hand-made entries.
+
 ## 0.1.1 - 2026-11-08
 
 Documentation only.

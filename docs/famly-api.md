@@ -116,12 +116,15 @@ app is reset to the nursery's text on the next run.
 
 Limits that follow from this:
 
-* A changed *start* time yields a new ID. Within ten minutes of the old entry,
-  or overlapping it, the time-based duplicate check skips the event and the old
-  entry stays uncorrected. Otherwise a second entry appears next to the old one.
-* The duplicate check applies to everything that is not yet in Napper, so two
-  events of the same category within ten minutes are merged into one. The second
-  is counted as unchanged and not listed.
+* A changed *start* time yields a new ID. A nap whose new time overlaps the old
+  one is skipped as the same event, and the old entry stays uncorrected. A moved
+  meal or diaper change has no span, so it appears as a second entry next to the
+  old one.
+* Different IDs mean different events: two meals or two diaper changes within
+  ten minutes are both written. The time-based check applies only against
+  entries that carry no ID of ours, such as older imports and what a parent
+  typed into the app. A Famly event within ten minutes of such an entry, or
+  overlapping it, is not written.
 * Deletions at the nursery are never propagated.
 * A nap that is still running has no end time. It is listed as skipped until it
   ends.
