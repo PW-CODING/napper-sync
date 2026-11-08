@@ -90,10 +90,14 @@ Design notes, in case you want to change them:
 * **Hardening** - `ProtectSystem=strict` and `ProtectHome=read-only`, with
   `ReadWritePaths=` opened only for the config directory. That last line is
   not optional: the Napper id-token is refreshed automatically and written
-  back to `napper-tokens.json`. Without write access the refresh fails a few
-  weeks after installation: Napper has by then replaced the old token, the new
-  one cannot be stored, and the run exits with an error that the failure unit
-  reports. Only a new `napper-sync login` recovers from that.
+  back to `napper-tokens.json`. Napper replaces the refresh token on every
+  refresh, so napper-sync checks first that the file can be written and does
+  not refresh otherwise. Without write access the runs start failing a few
+  weeks after installation, when the id-token is due for renewal, with an error
+  that names the file (and, with a webhook set, a Discord message). The stored token
+  stays valid: open the path and the next run continues. Only a failure the
+  check cannot foresee, such as a full disk, loses the renewed token; then a new
+  `napper-sync login` is needed.
 
 ## 4. Discord notifications
 

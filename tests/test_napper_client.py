@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta
 
 import pytest
@@ -167,3 +168,89 @@ def test_update_log_is_dry_run_by_default(client, mock_api):
 
     assert result["dry_run"] is True
     assert len([c for c in mock_api.calls if c[0] == "PUT"]) == before
+
+
+# ---- a refresh must not be sent when its result cannot be stored ------------
+#
+# Napper rotates the refresh token on every refresh: once the request went
+# through, the stored token is dead. If the new pair then cannot be written,
+# only a new e-mail login helps. So the token file has to be writable *before*
+# the request is sent.
+
+
+def _tokens(*, expiring: bool) -> Tokens:
+    days = 2 if expiring else 30
+    exp = int((datetime.now() + timedelta(days=days)).timestamp())
+    return Tokens("account-1", "old", "refresh-token", "TEST-DEVICE", id_token_expires_at=exp)
+
+
+@pytest.fixture
+def lock_token_file(home):
+    """Store tokens in the default file and make it read-only."""
+    locked = []
+
+    def lock(tokens: Tokens):
+        if hasattr(os, "geteuid") and os.geteuid() == 0:
+            pytest.skip("root ignores file permissions")
+        path = tokens.save()
+        path.chmod(0o400)
+        locked.append(path)
+        return path
+
+    yield lock
+    for path in locked:
+        path.chmod(0o600)
+
+
+def test_expiring_token_is_not_refreshed_when_the_token_file_is_read_only(
+    mock_api, lock_token_file
+):
+    path = lock_token_file(_tokens(expiring=True))
+    before = path.read_bytes()
+    client = NapperClient(base_url=mock_api.base_url)
+
+    with pytest.raises(NapperError, match="napper-tokens.json"):
+        client.babies()
+
+    assert mock_api.refreshes == 0
+    assert path.read_bytes() == before, "the check must not touch the stored tokens"
+
+
+def test_401_does_not_refresh_when_the_token_file_is_read_only(mock_api, lock_token_file):
+    lock_token_file(_tokens(expiring=False))
+    mock_api.auth_fail_next = 1
+    client = NapperClient(base_url=mock_api.base_url)
+
+    with pytest.raises(NapperError, match="napper-tokens.json"):
+        client.babies()
+
+    assert mock_api.refreshes == 0
+
+
+def test_no_refresh_when_the_token_file_cannot_be_created(mock_api, home, tmp_path):
+    not_a_directory = tmp_path / "blocker"
+    not_a_directory.write_text("a file where the directory should be")
+    client = NapperClient(
+        tokens=_tokens(expiring=True),
+        base_url=mock_api.base_url,
+        tokens_path=not_a_directory / "napper-tokens.json",
+    )
+
+    with pytest.raises(NapperError, match="napper-tokens.json"):
+        client.babies()
+
+    assert mock_api.refreshes == 0
+
+
+@pytest.mark.parametrize("file_exists", [False, True], ids=["no file yet", "writable file"])
+def test_refresh_stores_the_new_tokens_and_leaves_nothing_else_behind(mock_api, home, file_exists):
+    tokens = _tokens(expiring=True)
+    if file_exists:
+        tokens.save()
+    client = NapperClient(tokens=tokens, base_url=mock_api.base_url)
+
+    client.babies()
+
+    assert mock_api.refreshes == 1
+    assert Tokens.load().id_token == "id-token"
+    assert [p.name for p in home.iterdir()] == ["napper-tokens.json"]

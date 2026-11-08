@@ -28,6 +28,11 @@ The `idToken` lives about 30 days; the `refreshToken` for months. The client
 renews the idToken automatically when fewer than seven days remain, and once
 more on any 401/403 before giving up.
 
+A refresh also replaces the `refreshToken`; the old one stops working. A
+refreshed pair that cannot be stored is therefore lost together with the
+login, so the client checks that it can write the token file before it sends
+the refresh, and stops with an error instead.
+
 ### Headers on every request
 
 ```

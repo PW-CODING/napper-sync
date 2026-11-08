@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import tempfile
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -57,6 +58,23 @@ def ensure_home() -> Path:
     with contextlib.suppress(OSError):  # Windows has no POSIX permission bits
         path.chmod(0o700)
     return path
+
+
+def check_writable(path: Path) -> None:
+    """Raise ``OSError`` if :func:`write_secret` would fail on ``path``.
+
+    Changes nothing that is already there: an existing file is opened for
+    appending (which tests its write permission without truncating it); for a
+    new file a throwaway file in the same directory stands in. A full disk is
+    not detected.
+    """
+    ensure_home()
+    if path.exists():
+        with path.open("ab"):
+            pass
+    else:
+        with tempfile.TemporaryFile(dir=path.parent):
+            pass
 
 
 def write_secret(path: Path, value: str) -> Path:

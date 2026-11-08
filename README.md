@@ -122,8 +122,11 @@ Categories accept English or German short names (`nap`/`nickerchen`,
   overlaps the old one is left alone and the old entry stays as it is. A moved meal or diaper change
   appears as a second entry next to the old one.
 - Entries deleted at the nursery are not deleted in Napper.
-- A Napper token that was refreshed but could not be saved is lost, and a new login is needed.
-  See the [deployment guide](https://github.com/PW-CODING/napper-sync/blob/main/docs/deployment.md).
+- Before the Napper login is renewed, the token file is checked for write access. If it cannot be
+  written, the run stops with an error and the stored login stays usable once the file is writable
+  again. A failure the check cannot foresee, such as a full disk, still loses the renewed token,
+  and a new login is needed. See the
+  [deployment guide](https://github.com/PW-CODING/napper-sync/blob/main/docs/deployment.md).
 
 ## Project layout
 

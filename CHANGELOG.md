@@ -7,6 +7,10 @@
   the second never reached Napper. Entries that carry their own ID are now
   distinct events. The time check still protects against older imports and
   hand-made entries.
+- Fixed: a token refresh with a token file that could not be written locked the
+  account out. Napper had already replaced the refresh token, and the new one
+  was lost. The client now checks for write access first and stops with an
+  error that names the file; the stored login stays usable.
 
 ## 0.1.1 - 2026-11-08
 

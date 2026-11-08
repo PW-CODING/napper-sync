@@ -211,6 +211,19 @@ class NapperClient:
     def refresh(self) -> Tokens:
         if not self.tokens:
             raise NapperAuthError("No refresh token available.")
+        # Napper replaces the refresh token on every refresh. If the new pair
+        # cannot be stored afterwards, the stored one is dead and only a new
+        # e-mail login helps - so find out first.
+        path = self._tokens_path or cfg.napper_tokens_path()
+        try:
+            cfg.check_writable(path)
+        except OSError as err:
+            raise NapperError(
+                f"Not refreshing the login: {path} cannot be written "
+                f"({err.strerror or err}). Napper replaces the refresh token on every "
+                "refresh, so the new one would be lost and the stored one would stop "
+                "working. Fix the permissions and run again."
+            ) from err
         resp = self._request(
             "POST",
             "/auth/refresh-token",
