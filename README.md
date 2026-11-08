@@ -1,5 +1,7 @@
 # napper-sync
 
+![napper-sync - Famly to Napper](https://raw.githubusercontent.com/PW-CODING/napper-sync/main/docs/images/banner.jpg)
+
 **Sync what your nursery logs in [Famly](https://famly.co) - naps, meals, diaper
 changes - into the [Napper](https://napper.app) baby tracker, automatically. Also an
 unofficial Python client for the Napper API.**

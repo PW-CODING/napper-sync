@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "napper-sync"
-version = "0.1.0"
+version = "0.1.1"
 description = "Unofficial Napper baby-tracker API client, and a sync that imports what the nursery logs in Famly."
 readme = "README.md"
 license = "MIT"

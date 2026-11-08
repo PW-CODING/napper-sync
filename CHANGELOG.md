@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 - 2026-11-08
+
+Documentation only.
+
+- README and deployment guide install from PyPI, with a PyPI badge.
+- Project banner.
+
 ## 0.1.0 - 2026-11-08
 
 First public release.
