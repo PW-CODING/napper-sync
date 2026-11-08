@@ -21,7 +21,7 @@ nursery's entries into Napper by hand every evening. This tool does that for
 you, every hour, without creating duplicates.
 
 Along the way it documents two APIs that have no public documentation - see
-[`docs/`](docs/).
+[`docs/`](https://github.com/PW-CODING/napper-sync/tree/main/docs).
 
 > **Disclaimer.** This project is not affiliated with, endorsed by, or supported by
 > Napper AB or Famly ApS. It talks to private, undocumented APIs that the official
@@ -86,7 +86,7 @@ napper-sync sync-famly --live         # write it
 ```
 
 To run this hourly on a Raspberry Pi with Discord alerts, see
-[`docs/deployment.md`](docs/deployment.md).
+[`docs/deployment.md`](https://github.com/PW-CODING/napper-sync/blob/main/docs/deployment.md).
 
 ### Importing a file
 
@@ -95,7 +95,7 @@ napper-sync sync-file entries.csv --live
 ```
 
 Columns `start,end,category,comment` plus any category field as a further
-column; see [`examples/entries.example.csv`](examples/entries.example.csv).
+column; see [`examples/entries.example.csv`](https://github.com/PW-CODING/napper-sync/blob/main/examples/entries.example.csv).
 An optional `id` column pins the Napper ID, so importing a corrected file
 updates the entries instead of duplicating them.
 Categories accept English or German short names (`nap`/`nickerchen`,
@@ -133,12 +133,12 @@ tests/               pytest suite against an in-process mock of the Napper API
 
 ## Documentation
 
-- [docs/napper-api.md](docs/napper-api.md) - endpoints, auth, the log object,
+- [docs/napper-api.md](https://github.com/PW-CODING/napper-sync/blob/main/docs/napper-api.md) - endpoints, auth, the log object,
   all categories and fields, the traps (seconds in a field called minutes,
   percent-encoded comments, date-based IDs), and how the write path was found
-- [docs/famly-api.md](docs/famly-api.md) - instances, token, the calendar
+- [docs/famly-api.md](https://github.com/PW-CODING/napper-sync/blob/main/docs/famly-api.md) - instances, token, the calendar
   endpoint and its event shapes
-- [docs/deployment.md](docs/deployment.md) - systemd timer, hardening, Discord
+- [docs/deployment.md](https://github.com/PW-CODING/napper-sync/blob/main/docs/deployment.md) - systemd timer, hardening, Discord
 
 ## Development
 
@@ -191,4 +191,4 @@ project.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/PW-CODING/napper-sync/blob/main/LICENSE)

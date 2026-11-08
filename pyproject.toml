@@ -35,6 +35,8 @@ napper-sync = "napper_sync.cli:main"
 [project.urls]
 Homepage = "https://github.com/PW-CODING/napper-sync"
 Issues = "https://github.com/PW-CODING/napper-sync/issues"
+Documentation = "https://github.com/PW-CODING/napper-sync/tree/main/docs"
+Changelog = "https://github.com/PW-CODING/napper-sync/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

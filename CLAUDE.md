@@ -24,6 +24,8 @@ undocumented; everything known about them is in `docs/napper-api.md` and
   user asking. `probe_corrections.py` also runs against the mock in the test
   suite, so it cannot rot.
 - `examples/` - config, data files, systemd units.
+- `.github/workflows/` - `ci.yml` (tests on 3.11 to 3.13) and `publish.yml`
+  (PyPI upload when a release is published; see `docs/releasing.md`).
 
 ## Commands
 
