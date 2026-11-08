@@ -5,6 +5,7 @@ changes - into the [Napper](https://napper.app) baby tracker, automatically. Als
 unofficial Python client for the Napper API.**
 
 [![CI](https://github.com/PW-CODING/napper-sync/actions/workflows/ci.yml/badge.svg)](https://github.com/PW-CODING/napper-sync/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/napper-sync)](https://pypi.org/project/napper-sync/)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -51,9 +52,9 @@ Standard library only; no runtime dependencies.
 ## Install
 
 ```bash
-pipx install git+https://github.com/PW-CODING/napper-sync
+pipx install napper-sync
 # or
-pip install --user git+https://github.com/PW-CODING/napper-sync
+pip install --user napper-sync
 ```
 
 Requires Python 3.11+.

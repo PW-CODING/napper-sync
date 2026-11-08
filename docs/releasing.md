@@ -44,9 +44,3 @@ The manual run builds from the branch you pick, normally `main`.
 3. Commit, push, wait for CI to pass.
 4. Create the GitHub release `vX.Y.Z`. The tag must be the version with a
    leading `v`. Publishing the release builds, checks and uploads the package.
-
-## After the first PyPI upload
-
-Switch the install commands in the README and in `docs/deployment.md` from
-`pipx install git+https://github.com/PW-CODING/napper-sync` to
-`pipx install napper-sync`, and upgrades to `pipx upgrade napper-sync`.

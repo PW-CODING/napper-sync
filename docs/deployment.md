@@ -8,8 +8,8 @@ scheduled task works too and is described at the end.
 
 ```bash
 # as the user that will run the sync (not root)
-pipx install git+https://github.com/PW-CODING/napper-sync
-# or: pip install --user git+https://github.com/PW-CODING/napper-sync
+pipx install napper-sync
+# or: pip install --user napper-sync
 napper-sync --version
 ```
 
@@ -123,7 +123,7 @@ notifications work the same way.
 ## Updating
 
 ```bash
-pipx upgrade napper-sync      # or: pip install --user -U git+https://github.com/PW-CODING/napper-sync
+pipx upgrade napper-sync      # or: pip install --user -U napper-sync
 sudo systemctl start napper-sync.service && journalctl -u napper-sync -n 20
 ```
 
